@@ -99,7 +99,6 @@ export default function Home() {
             priority
           />
         </div>
-
         {/* Brand Name */}
         <div className="animate-fade-in-up opacity-0 delay-100 mb-4">
           <h1 className="relative text-5xl sm:text-6xl md:text-7xl font-light tracking-[0.1em] text-center">
@@ -107,7 +106,6 @@ export default function Home() {
             <span className="absolute left-1/2 -bottom-2 w-48 h-0.5 -translate-x-1/2 bg-gradient-to-r from-gray-500 via-gray-300 to-gray-500 rounded-full animate-light-travel" />
           </h1>
         </div>
-
         {/* Coming Soon */}
         <div className="animate-fade-in-up opacity-0 delay-200 mt-6 text-center">
           <p className="text-neutral-700 text-xs sm:text-sm uppercase tracking-[0.25em] mb-2">
@@ -119,13 +117,12 @@ export default function Home() {
             </span>
           </h2>
         </div>
-
-        {/* Email Form */}
-        <div className="animate-fade-in-up opacity-0 delay-400 mt-8 w-full flex justify-center">
+        {/* Email Form */}{" "}
+        <div className="animate-fade-in-up opacity-0 delay-400 mt-8 w-full flex justify-center px-4">
           {!submitted ? (
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row items-center justify-center w-full max-w-md"
+              className="flex flex-col sm:flex-row items-center justify-center w-full max-w-md gap-3 md:gap-0"
             >
               {/* Email Input */}
               <input
@@ -133,16 +130,13 @@ export default function Home() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="Enter your email"
-                className="w-full px-4 py-2.5 text-center sm:text-left bg-transparent border border-neutral-800 text-neutral-900 placeholder:font-light placeholder:text-neutral-900 font-normal focus:outline-none focus:border-neutral-900 transition duration-300"
+                placeholder="Enter Your Email"
+                className="w-full sm:flex-1 px-4 py-2.5 font-medium text-center sm:text-left bg-transparent border border-neutral-800 text-neutral-900 placeholder-font-light focus:outline-none focus:border-neutral-900 transition duration-300"
               />
-
-
-
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full sm:w-auto px-6 py-2.5 border border-neutral-800 text-neutral-800 hover:bg-neutral-900 hover:text-gray-100 transition-all duration-300 whitespace-nowrap flex items-center justify-center mt-3 sm:mt-0"
+                className="w-full sm:w-auto px-6 py-2.5 border border-neutral-800 text-neutral-800 md:border-l-0 hover:bg-neutral-900 hover:text-gray-100 transition-all duration-300 whitespace-nowrap flex items-center justify-center"
               >
                 Notify Me
               </button>
@@ -167,7 +161,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
         {/* Social */}
         <div className="animate-fade-in-up opacity-0 delay-600 mt-8">
           <Link
@@ -220,7 +213,8 @@ export default function Home() {
         }
 
         @keyframes pulse-slow {
-          0%, 100% {
+          0%,
+          100% {
             opacity: 1;
             transform: scale(1);
           }
@@ -239,11 +233,21 @@ export default function Home() {
           animation: fade-in-up 1.2s ease forwards;
         }
 
-        .delay-100 { animation-delay: 0.1s; }
-        .delay-200 { animation-delay: 0.2s; }
-        .delay-400 { animation-delay: 0.4s; }
-        .delay-500 { animation-delay: 0.5s; }
-        .delay-600 { animation-delay: 0.6s; }
+        .delay-100 {
+          animation-delay: 0.1s;
+        }
+        .delay-200 {
+          animation-delay: 0.2s;
+        }
+        .delay-400 {
+          animation-delay: 0.4s;
+        }
+        .delay-500 {
+          animation-delay: 0.5s;
+        }
+        .delay-600 {
+          animation-delay: 0.6s;
+        }
 
         .animate-marquee {
           animation: marquee 35s linear infinite;
