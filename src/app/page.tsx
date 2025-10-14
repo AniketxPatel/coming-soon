@@ -34,8 +34,8 @@ export default function Home() {
     const interval = setInterval(() => {
       setParticles((prev) =>
         prev.map((p) => {
-          let x = p.x + p.dx;
-          let y = p.y + p.dy;
+          const x = p.x + p.dx;
+          const y = p.y + p.dy;
           if (x < 0 || x > 100) p.dx = -p.dx;
           if (y < 0 || y > 100) p.dy = -p.dy;
           return { ...p, x, y };
@@ -149,7 +149,7 @@ export default function Home() {
             </form>
           ) : (
             <p className="text-neutral-800 text-sm tracking-[0.1em] uppercase text-center animate-fade-in-up opacity-0">
-              Thank you! You'll be the first to know.
+              Thank you! You&apos;ll be the first to know.
             </p>
           )}
         </div>
