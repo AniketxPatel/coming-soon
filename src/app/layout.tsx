@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   title: "AceEight",
   description: "Redefining Everyday Fashion",
   icons: {
-    icon: "/logo/whitel.svg",
+    icon: "/whitel.svg",
   },
 };
 
