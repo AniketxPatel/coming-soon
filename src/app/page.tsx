@@ -46,27 +46,38 @@ export default function Home() {
   }, []);
 
   const marqueeTexts: string[] = [
-    "Street. Style. Statement.",
-    "Urban Vibes, Bold Moves",
+    "Not just a brand - its a vibe",
     "ACEEIGHT - Dropping Soon",
     "Drip That Talks",
-    "Limited Drops. Maximum Hype",
+    "Limited Drops.Maximum Hype",
   ];
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
 
-    // Placeholder API call — replace with your backend endpoint
     try {
-      // Example: await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify({ email }) })
-      console.log("Submitted email:", email);
-      setSubmitted(true);
-      setEmail("");
+      // Replace the URL below with the backend API endpoint when provided
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit email");
+      }
+
+      setSubmitted(true); // Show thank-you message
+      setEmail(""); // Clear input
     } catch (error) {
       console.error("Error submitting email:", error);
+      alert("Something went wrong! Please try again.");
     }
   };
+
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-gray-200 via-gray-300 to-gray-200 text-neutral-900 font-light tracking-widest">
