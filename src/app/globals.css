@@ -1,26 +1,130 @@
+/* === Tailwind + Animations === */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* === Dark mode variant === */
+@custom-variant dark (&:is(.dark *));
 
+/* === Map CSS vars to Tailwind color tokens === */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* === Light theme (Zinc shades) === */
+:root {
+  --radius: 0.625rem;
+
+  /* Background / foreground */
+  --background: rgb(250, 250, 250);
+  /* zinc-50 */
+  --foreground: rgb(24, 24, 27);
+  /* zinc-900 */
+
+  /* Card & popover */
+  --card: rgb(255, 255, 255);
+  --card-foreground: rgb(24, 24, 27);
+
+  /* Primary / Secondary / Accent */
+  --primary: rgb(39, 39, 42);
+  /* zinc-800 */
+  --primary-foreground: rgb(250, 250, 250);
+
+  --secondary: rgb(113, 113, 122);
+  /* zinc-500 */
+  --secondary-foreground: rgb(255, 255, 255);
+
+  --accent: rgb(63, 63, 70);
+  /* zinc-700 */
+  --accent-foreground: rgb(255, 255, 255);
+
+  /* Muted, border, ring */
+  --muted: rgb(228, 228, 231);
+  /* zinc-200 */
+  --muted-foreground: rgb(63, 63, 70);
+  /* zinc-700 */
+
+  --border: rgb(228, 228, 231);
+  /* zinc-200 */
+  --input: rgb(212, 212, 216);
+  /* zinc-300 */
+  --ring: rgb(161, 161, 170);
+  /* zinc-400 */
+}
+
+/* === Dark theme (Zinc reversed) === */
+.dark {
+  --background: rgb(24, 24, 27);
+  /* zinc-900 */
+  --foreground: rgb(250, 250, 250);
+
+  --card: rgb(39, 39, 42);
+  /* zinc-800 */
+  --card-foreground: rgb(250, 250, 250);
+
+  --primary: rgb(244, 244, 245);
+  /* zinc-100 */
+  --primary-foreground: rgb(24, 24, 27);
+
+  --secondary: rgb(161, 161, 170);
+  /* zinc-400 */
+  --secondary-foreground: rgb(24, 24, 27);
+
+  --accent: rgb(113, 113, 122);
+  /* zinc-500 */
+  --accent-foreground: rgb(24, 24, 27);
+
+  --muted: rgb(63, 63, 70);
+  /* zinc-700 */
+  --muted-foreground: rgb(244, 244, 245);
+
+  --border: rgb(63, 63, 70);
+  /* zinc-700 */
+  --input: rgb(82, 82, 91);
+  /* zinc-600 */
+  --ring: rgb(113, 113, 122);
+  /* zinc-500 */
+}
+
+/* === Base styles === */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,button,
+  .heading {
+    font-family: var(--font-bebas-neue), sans-serif;
+  }
+
+  p {
+    font-family: var(--font-nunito), sans-serif;
+  }
 }
