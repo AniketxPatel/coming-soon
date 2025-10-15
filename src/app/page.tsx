@@ -124,7 +124,7 @@ export default function Home() {
     e.preventDefault();
     if (!email) return;
 
-    const data = await submitToWaitlist(email, false); 
+    const data = await submitToWaitlist(email, false);
 
     if (data) {
       console.log("Email submitted:", email, data.message);
@@ -153,7 +153,7 @@ export default function Home() {
             ACEEIGHT
           </h1>
           <p className="opacity-0 text-sm md:text-base text-gray-400 tracking-[0.3em] uppercase text-center animate-fade-in-up delay-300">
-            Stay Tuned Launching Soon.
+            Brace yourself for the drop
           </p>
 
           <span className="opacity-0 mt-2 inline-flex items-center rounded-full border border-gray-700 px-3 py-1 text-lg md:text-xl tracking-[0.25em] font-semibold uppercase text-white animate-fade-in-up delay-400">
