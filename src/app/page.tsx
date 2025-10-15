@@ -1,286 +1,268 @@
 "use client";
 
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import Link from "next/link";
-
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  dx: number;
-  dy: number;
-  opacity: number;
-}
 
 export default function Home() {
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const [email, setEmail] = useState<string>("");
-  const [submitted, setSubmitted] = useState<boolean>(false);
-
-  useEffect(() => {
-    const p: Particle[] = [...Array(40)].map(() => ({
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 2 + Math.random() * 3,
-      dx: (Math.random() - 0.5) * 0.08,
-      dy: (Math.random() - 0.5) * 0.08,
-      opacity: 0.5,
-    }));
-    setParticles(p);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setParticles((prev) =>
-        prev.map((p) => {
-          const x = p.x + p.dx;
-          const y = p.y + p.dy;
-          if (x < 0 || x > 100) p.dx = -p.dx;
-          if (y < 0 || y > 100) p.dy = -p.dy;
-          return { ...p, x, y };
-        })
-      );
-    }, 50);
-    return () => clearInterval(interval);
-  }, []);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const mouseRef = useRef({ x: 0.5, y: 0.5 });
 
   const marqueeTexts: string[] = [
     "Not just a brand - its a vibe",
     "ACEEIGHT - Dropping Soon",
     "Drip That Talks",
-    "Limited Drops.Maximum Hype",
+    "Limited Drops. Maximum Hype",
   ];
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  // Starfield canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+
+    let w = (canvas.width = window.innerWidth * devicePixelRatio);
+    let h = (canvas.height = window.innerHeight * devicePixelRatio);
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+
+    const STAR_COUNT = 220;
+    type Star = { x: number; y: number; z: number; r: number; tw: number };
+    const stars: Star[] = Array.from({ length: STAR_COUNT }).map(() => ({
+      x: Math.random() * 2 - 1,
+      y: Math.random() * 2 - 1,
+      z: Math.random(),
+      r: Math.random() * 1.2 + 0.2,
+      tw: Math.random() * 2 * Math.PI,
+    }));
+
+    const resize = () => {
+      w = canvas.width = window.innerWidth * devicePixelRatio;
+      h = canvas.height = window.innerHeight * devicePixelRatio;
+    };
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    const draw = (t: number) => {
+      ctx.fillStyle = "rgba(0,0,0,0.3)";
+      ctx.fillRect(0, 0, w, h);
+
+      const cx = w / 2;
+      const cy = h / 2;
+
+      const px = (mouseRef.current.x - 0.5) * 0.06;
+      const py = (mouseRef.current.y - 0.5) * 0.06;
+
+      for (const s of stars) {
+        s.z -= 0.0012;
+        if (s.z <= 0) s.z = 1;
+
+        const scale = 300;
+        const x = (s.x + px) / s.z;
+        const y = (s.y + py) / s.z;
+        const sx = x * scale + cx;
+        const sy = y * scale + cy;
+
+        const twinkle = 0.6 + 0.4 * Math.sin(s.tw + t * 0.002);
+        const r = Math.max(0.2, s.r * twinkle);
+
+        ctx.beginPath();
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        ctx.fill();
+
+        const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, r * 4);
+        grad.addColorStop(0, "rgba(255,255,255,0.5)");
+        grad.addColorStop(1, "rgba(255,255,255,0.0)");
+        ctx.beginPath();
+        ctx.arc(sx, sy, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        s.tw += 0.02;
+      }
+
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    rafRef.current = requestAnimationFrame(draw);
+
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  // Mouse/touch movement
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      mouseRef.current.x = e.clientX / window.innerWidth;
+      mouseRef.current.y = e.clientY / window.innerHeight;
+    };
+    const onTouch = (e: TouchEvent) => {
+      if (!e.touches[0]) return;
+      mouseRef.current.x = e.touches[0].clientX / window.innerWidth;
+      mouseRef.current.y = e.touches[0].clientY / window.innerHeight;
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onTouch);
+    };
+  }, []);
+
+  // Email submission
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
 
-    try {
-      // Replace the URL below with the backend API endpoint when provided
-      const response = await fetch("/api/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      });
+    // Temporarily simulate submission
+    console.log("Email submitted:", email);
 
-      if (!response.ok) {
-        throw new Error("Failed to submit email");
-      }
+    // TODO: Replace with real backend API call when ready
+    // Example:
+    // fetch("/api/subscribe", { method: "POST", ... })
 
-      setSubmitted(true); // Show thank-you message
-      setEmail(""); // Clear input
-    } catch (error) {
-      console.error("Error submitting email:", error);
-      alert("Something went wrong! Please try again.");
-    }
+    setSubmitted(true);
+    setEmail("");
   };
 
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-gray-200 via-gray-300 to-gray-200 text-neutral-900 font-light tracking-widest">
-      {/* Floating particles */}
-      <div className="absolute inset-0 pointer-events-none">
-        {particles.map((p, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full bg-neutral-800"
-            style={{
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              opacity: p.opacity,
-              transform: `translate(${p.x}vw, ${p.y}vh)`,
-            }}
-          />
-        ))}
-      </div>
+    <section className="relative min-h-screen bg-black text-white overflow-hidden">
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen w-full">
-        {/* Logo */}
-        <div className="animate-fade-in-up opacity-0 mb-6 sm:mb-8">
+      <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6">
+        <div className="flex flex-col items-center gap-4 text-center">
           <Image
-            src="/AceLogo.png"
+            src="/logowhite.png"
             alt="ACEEIGHT Logo"
-            width={128}
-            height={128}
-            className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 object-contain opacity-90 drop-shadow-md hover:scale-105 transition-transform duration-300"
-            priority
+            height={140}
+            width={140}
+            className="opacity-0 rounded-full drop-shadow-[0_0_30px_rgba(255,255,255,0.8)] animate-fade-in-up delay-100"
           />
-        </div>
-        {/* Brand Name */}
-        <div className="animate-fade-in-up opacity-0 delay-100 mb-4">
-          <h1 className="relative text-5xl sm:text-6xl md:text-7xl font-light tracking-[0.1em] text-center">
+          <h1 className="opacity-0 text-4xl md:text-6xl font-light tracking-[0.18em] text-white animate-fade-in-up delay-200">
             ACEEIGHT
-            <span className="absolute left-1/2 -bottom-2 w-48 h-0.5 -translate-x-1/2 bg-gradient-to-r from-gray-500 via-gray-300 to-gray-500 rounded-full animate-light-travel" />
           </h1>
-        </div>
-        {/* Coming Soon */}
-        <div className="animate-fade-in-up opacity-0 delay-200 mt-6 text-center">
-          <p className="text-neutral-700 text-xs sm:text-sm uppercase tracking-[0.25em] mb-2">
-            Stay Tuned for the Launch
+          <p className="opacity-0 text-sm md:text-base text-gray-400 tracking-[0.3em] uppercase text-center animate-fade-in-up delay-300">
+            Stay Tuned Launching soon.
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-light tracking-[0.15em] animate-pulse-slow">
-            <span className="bg-gradient-to-r from-gray-700 via-gray-900 to-gray-700 bg-clip-text text-transparent">
-              COMING SOON
-            </span>
-          </h2>
-        </div>
-        {/* Email Form */}{" "}
-        <div className="animate-fade-in-up opacity-0 delay-400 mt-8 w-full flex justify-center px-4">
-          {!submitted ? (
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row items-center justify-center w-full max-w-md gap-3 md:gap-0"
-            >
-              {/* Email Input */}
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter Your Email"
-                className="w-full sm:flex-1 px-4 py-2.5 font-medium text-center sm:text-left bg-transparent border border-neutral-800 text-neutral-900 placeholder-font-light focus:outline-none focus:border-neutral-900 transition duration-300"
-              />
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full sm:w-auto px-6 py-2.5 border border-neutral-800 text-neutral-800 md:border-l-0 hover:bg-neutral-900 hover:text-gray-100 transition-all duration-300 whitespace-nowrap flex items-center justify-center"
-              >
-                Notify Me
-              </button>
-            </form>
-          ) : (
-            <p className="text-neutral-800 text-sm tracking-[0.1em] uppercase text-center animate-fade-in-up opacity-0">
-              Thank you! You&apos;ll be the first to know.
-            </p>
-          )}
-        </div>
 
-        {/* Marquee */}
-        <div className="animate-fade-in-up opacity-0 delay-500 mt-10 w-full overflow-hidden">
-          <div className="flex w-max animate-marquee whitespace-nowrap items-center">
-            {[...marqueeTexts, ...marqueeTexts].map((text, i) => (
-              <div key={i} className="flex items-center gap-6 mx-6">
-                <p className="text-neutral-800 text-xs sm:text-sm tracking-[0.25em] uppercase shimmer-text">
-                  {text}
-                </p>
-                <span className="h-0.5 w-6 bg-neutral-400/40" />
-              </div>
-            ))}
+          <span className="opacity-0 mt-2 inline-flex items-center rounded-full border border-gray-700 px-3 py-1 text-lg md:text-xl tracking-[0.25em] font-semibold uppercase text-white animate-fade-in-up delay-400">
+            <span className="mr-2 h-2 w-2 rounded-full bg-[var(--color-chart-2)] shadow-[0_0_12px_var(--color-chart-2)]" />
+            Coming Soon
+          </span>
+
+          {/* Email Form */}
+          <div className="opacity-0 w-full flex justify-center px-4 pt-6 animate-fade-in-up delay-500">
+            {submitted ? (
+              <p className="opacity-0 animate-fade-in-up delay-100 text-white transition-transform text-sm md:text-lg tracking-widest uppercase text-center">
+                Thank you! You&apos;ll be the first to know.
+              </p>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col sm:flex-row w-full max-w-xs sm:max-w-lg gap-3"
+              >
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="Enter Your Email"
+                  className="flex-1 px-4 text-center sm:text-left bg-transparent border border-neutral-700 text-white placeholder-gray-600 focus:outline-none focus:border-white focus:ring-0 text-sm rounded"
+                />
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto px-6 bg-white text-black font-medium hover:bg-gray-100 transition-colors text-sm rounded"
+                >
+                  Notify Me
+                </Button>
+              </form>
+            )}
+
           </div>
-        </div>
-        {/* Social */}
-        <div className="animate-fade-in-up opacity-0 delay-600 mt-8">
-          <Link
-            href="https://www.instagram.com/aceeight.in"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex text-neutral-800 hover:text-neutral-900 transition-transform duration-300 hover:scale-125"
-            aria-label="Follow us on Instagram"
-          >
-            <Image
-              src="/insta.svg"
-              alt="Instagram"
-              width={24}
-              height={24}
-              className="text-neutral-600"
-            />
-          </Link>
+
+          {/* Marquee */}
+          <div className="opacity-0 mt-10 w-full overflow-hidden animate-fade-in-up delay-600">
+            <div className="flex marquee-content w-max">
+              {Array.from({ length: 4 }).flatMap(() => marqueeTexts).map((text, i) => (
+                <div key={i} className="flex items-center gap-6 mx-6 shrink-0">
+                  <p className="text-xs sm:text-sm tracking-[0.25em] uppercase">{text}</p>
+                  <span className="h-0.5 w-6 bg-neutral-400/40" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Social */}
+          <div className="animate-fade-in-up delay-700 opacity-0 mt-6 ">
+            <a
+              href="https://www.instagram.com/aceeight.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
+              aria-label="Follow us on Instagram"
+            >
+              <Image
+                src="/insta.svg"
+                alt="Instagram"
+                width={28}
+                height={28}
+                className="invert transition-transform duration-300 hover:scale-110"
+              />
+              <span className="text-sm transition-transform duration-300 hover:scale-105">
+                @aceeight.in
+              </span>
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* Animations */}
       <style jsx global>{`
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+        .marquee-content {
+          display: flex;
+          animation: marquee 120s linear infinite;
         }
-
         @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-25%); }
         }
+        .flex > * { flex-shrink: 0; }
 
-        @keyframes light-travel {
-          0% {
-            background-position: 0% center;
-          }
-          100% {
-            background-position: 200% center;
-          }
-        }
+        @keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-        @keyframes pulse-slow {
-          0%,
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.7;
-            transform: scale(1.03);
-          }
-        }
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fade-in-up 1.2s ease forwards;
+}
 
-        .animate-light-travel {
-          background-size: 200% auto;
-          animation: light-travel 4s linear infinite;
-        }
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-600 { animation-delay: 0.6s; }
+.delay-700 { animation-delay: 0.7s; }
 
-        .animate-fade-in-up {
-          animation: fade-in-up 1.2s ease forwards;
-        }
-
-        .delay-100 {
-          animation-delay: 0.1s;
-        }
-        .delay-200 {
-          animation-delay: 0.2s;
-        }
-        .delay-400 {
-          animation-delay: 0.4s;
-        }
-        .delay-500 {
-          animation-delay: 0.5s;
-        }
-        .delay-600 {
-          animation-delay: 0.6s;
-        }
-
-        .animate-marquee {
-          animation: marquee 35s linear infinite;
-        }
-
-        .animate-pulse-slow {
-          animation: pulse-slow 3s ease-in-out infinite;
-        }
-
-        .shimmer-text {
-          background: linear-gradient(
-            90deg,
-            rgba(60, 60, 60, 0.8) 30%,
-            rgba(30, 30, 30, 1) 50%,
-            rgba(60, 60, 60, 0.8) 100%
-          );
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          animation: shimmer 8s linear infinite;
-        }
       `}</style>
-    </div>
+    </section>
   );
 }
