@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { submitToWaitlist } from "./utils/waitlist";
 
 export default function Home() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -50,7 +51,7 @@ export default function Home() {
     resize();
 
     const draw = (t: number) => {
-      ctx.fillStyle = "rgba(0,0,0,0.3)";
+      ctx.fillStyle = "rgba(0,0,0,0.15)";
       ctx.fillRect(0, 0, w, h);
 
       const cx = w / 2;
@@ -119,25 +120,24 @@ export default function Home() {
   }, []);
 
   // Email submission
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
 
-    // Temporarily simulate submission
-    console.log("Email submitted:", email);
+    const data = await submitToWaitlist(email, false); 
 
-    // TODO: Replace with real backend API call when ready
-    // Example:
-    // fetch("/api/subscribe", { method: "POST", ... })
-
-    setSubmitted(true);
-    setEmail("");
+    if (data) {
+      console.log("Email submitted:", email, data.message);
+      setSubmitted(true);
+      setEmail("");
+    } else {
+      alert("Failed to submit email. Please try again!");
+    }
   };
-
 
   return (
     <section className="relative min-h-screen bg-black text-white overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" aria-hidden="true" />
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-70 md:opacity-100" aria-hidden="true" />
 
       {/* Content */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6">
@@ -153,11 +153,11 @@ export default function Home() {
             ACEEIGHT
           </h1>
           <p className="opacity-0 text-sm md:text-base text-gray-400 tracking-[0.3em] uppercase text-center animate-fade-in-up delay-300">
-            Stay Tuned Launching soon.
+            Stay Tuned Launching Soon.
           </p>
 
           <span className="opacity-0 mt-2 inline-flex items-center rounded-full border border-gray-700 px-3 py-1 text-lg md:text-xl tracking-[0.25em] font-semibold uppercase text-white animate-fade-in-up delay-400">
-            <span className="mr-2 h-2 w-2 rounded-full bg-[var(--color-chart-2)] shadow-[0_0_12px_var(--color-chart-2)]" />
+            <span className="mr-2 mt-0.5 h-2 w-2 rounded-full bg-[var(--color-chart-2)] shadow-[0_0_12px_var(--color-chart-2)] animate-blink self-center" />
             Coming Soon
           </span>
 
@@ -210,7 +210,7 @@ export default function Home() {
               href="https://www.instagram.com/aceeight.in"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
+              className="flex items-center gap-3 transition-transform duration-300 "
               aria-label="Follow us on Instagram"
             >
               <Image
@@ -225,6 +225,7 @@ export default function Home() {
               </span>
             </a>
           </div>
+
         </div>
       </div>
 
@@ -254,6 +255,7 @@ export default function Home() {
   opacity: 0;
   animation: fade-in-up 1.2s ease forwards;
 }
+  
 
 .delay-100 { animation-delay: 0.1s; }
 .delay-200 { animation-delay: 0.2s; }
@@ -261,6 +263,14 @@ export default function Home() {
 .delay-500 { animation-delay: 0.5s; }
 .delay-600 { animation-delay: 0.6s; }
 .delay-700 { animation-delay: 0.7s; }
+
+ @keyframes blink {
+    0%, 50%, 100% { opacity: 1; }
+    25%, 75% { opacity: 0; }
+  }
+  .animate-blink {
+    animation: blink 2.5s infinite;
+  }
 
       `}</style>
     </section>
